@@ -18,12 +18,15 @@ mod benchmarking;
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+	use frame_support::traits::UnixTime;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		// Getting the timestamp from the runtime is required for this pallet to work.
+		type TimeProvider: UnixTime;
 	}
 
 	#[pallet::pallet]
@@ -38,6 +41,11 @@ pub mod pallet {
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
+	#[pallet::storage]
+	// Learn more about declaring storage items:
+	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
+	pub type Sometime<T> = StorageValue<_, u64>;
+
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
@@ -46,6 +54,8 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+		// Storage Time Stamp
+		SometimeStored(u64, T::AccountId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -62,6 +72,18 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		// Getting timestamp from the runtime is a very simple way to get a timestamp.
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		pub fn get_time(origin: OriginFor<T>) -> DispatchResult {
+			let _sender = ensure_signed(origin)?;
+			let _now: u64 = T::TimeProvider::now().as_secs();
+			// Update Storage
+			<Sometime<T>>::put(_now);
+
+			// Emit an event.
+			Self::deposit_event(Event::SometimeStored(_now, _sender));
+			Ok(())
+		}
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]

@@ -7,16 +7,21 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use pallet_grandpa::{
-	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
+	fg_primitives,
+	AuthorityId as GrandpaId,
+	AuthorityList as GrandpaAuthorityList,
 };
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{ crypto::KeyTypeId, OpaqueMetadata };
 use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
-	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiSignature,
+	create_runtime_str,
+	generic,
+	impl_opaque_keys,
+	traits::{ AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify },
+	transaction_validity::{ TransactionSource, TransactionValidity },
+	ApplyExtrinsicResult,
+	MultiSignature,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -25,13 +30,21 @@ use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
-	construct_runtime, parameter_types,
+	construct_runtime,
+	parameter_types,
 	traits::{
-		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
+		ConstU128,
+		ConstU32,
+		ConstU64,
+		ConstU8,
+		KeyOwnerProofSystem,
+		Randomness,
+		StorageInfo,
 	},
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		IdentityFee, Weight,
+		constants::{ BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND },
+		IdentityFee,
+		Weight,
 	},
 	StorageValue,
 };
@@ -41,10 +54,10 @@ pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-pub use sp_runtime::{Perbill, Permill};
+pub use sp_runtime::{ Perbill, Permill };
 
 /// Import the template pallet.
-pub use pallet_template;
+pub use pallet_blocktime;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -212,13 +225,13 @@ impl pallet_grandpa::Config for Runtime {
 
 	type KeyOwnerProofSystem = ();
 
-	type KeyOwnerProof =
-		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+	type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<
+		(KeyTypeId, GrandpaId)
+	>>::Proof;
 
-	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-		KeyTypeId,
-		GrandpaId,
-	)>>::IdentificationTuple;
+	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<
+		(KeyTypeId, GrandpaId)
+	>>::IdentificationTuple;
 
 	type HandleEquivocation = ();
 
@@ -266,9 +279,11 @@ impl pallet_sudo::Config for Runtime {
 }
 
 /// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
+impl pallet_blocktime::Config for Runtime {
 	type Event = Event;
+	type TimeProvider = Timestamp;
 }
+
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -286,7 +301,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template,
+		BlocktimeModule: pallet_blocktime,
 	}
 );
 
@@ -317,7 +332,7 @@ pub type Executive = frame_executive::Executive<
 	Block,
 	frame_system::ChainContext<Runtime>,
 	Runtime,
-	AllPalletsWithSystem,
+	AllPalletsWithSystem
 >;
 
 #[cfg(feature = "runtime-benchmarks")]
