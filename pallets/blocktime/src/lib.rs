@@ -42,6 +42,7 @@ pub mod pallet {
 	pub type Something<T> = StorageValue<_, u32>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn get_current_block_time)]
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Sometime<T> = StorageValue<_, u64>;
